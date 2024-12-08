@@ -5,27 +5,54 @@
 
 {% block content %}
 
-<h1>Генеалогическое древо</h1>
-<div id="family-tree">
-    {% for level in tree_levels %}
-    <div class="tree-level">
-        {% for person in level %}
-        <div class="person">
-            <p>{{ person.first_name }} {{ person.last_name }}</p>
-<!--            <a href="{% url 'add_person_with_parent' person.id %}">Добавить ребенка</a>-->
-<!--            <a href="{% url 'edit_person' person.id %}">Редактировать</a>-->
-<!--            <form action="{% url 'delete_person' person.id %}" method="post" style="display:inline;">-->
-<!--                {% csrf_token %}-->
-<!--                <button type="submit" onclick="return confirm('Вы уверены?');">Удалить</button>-->
-<!--            </form>-->
+<h1 class="text-center my-4">Генеалогическое древо</h1>
+
+<div id="family-tree" class="container">
+    {% for generation_number, persons in tree_levels %}
+    <div class="tree-level mb-4">
+        <div class="text-center mb-2">
+            <h4>Поколение №{{ generation_number }}</h4>
+            <a href="{% url 'add_person_to_gen' generation_number %}"
+               class="btn btn-outline-success rounded-circle"
+               title="Добавить человека">
+                <i class="bi bi-plus"></i>
+            </a>
         </div>
-        {% endfor %}
+
+        <div class="d-flex flex-wrap justify-content-center">
+            {% for person in persons %}
+            <div class="card mx-2 mb-3 shadow-sm" style="width: 10rem;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ person.first_name }} {{ person.last_name }}</h5>
+                    <div class="d-flex justify-content-center mt-3">
+                        <a href="{% url 'add_person_with_parent' person.id %}"
+                           class="btn btn-sm btn-outline-success rounded-circle mx-1"
+                           title="Добавить потомка">
+                            <i class="bi bi-person-plus"></i>
+                        </a>
+                        <a href="{% url 'edit_person' person.id %}"
+                           class="btn btn-sm btn-outline-primary rounded-circle mx-1"
+                           title="Редактировать">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="{% url 'delete_person' person.id %}" method="post" class="d-inline-block">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-danger rounded-circle"
+                                    type="submit"
+                                    title="Удалить"
+                                    onclick="return confirm('Вы хотите удалить элемент?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
     {% endfor %}
 </div>
-
-<!--<a href="{% url 'add_person' %}" class="btn btn-success">Добавить человека</a>-->
-
 
 <link type="text/css" rel="stylesheet" href="{% static 'tree/css/main.css' %}"/>
 {% endblock %}

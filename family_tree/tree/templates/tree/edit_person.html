@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Редактировать элемент{% endblock %}
+
+{% block content %}
+
+<h1>Редактировать информацию о человеке: {{ person.first_name }} {{ person.last_name }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Сохранить изменения</button>
+</form>
+
+<a href="{% url 'family_tree' %}">Вернуться к дереву</a>
+
+{% endblock %}

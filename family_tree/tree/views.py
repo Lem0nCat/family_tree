@@ -1,21 +1,22 @@
 from traceback import print_tb
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Q
 
 from .forms import PersonForm
-from .models import Person
+from .models import Person, Generation
 
 
 def index(request):
     return render(request, 'tree/index.html')
 
 
+@login_required(login_url='users:login')
 def family_tree(request):
     # Получаем всех людей с их поколениями
     all_people = Person.objects.select_related('generation').filter(creator_user=request.user)
-    print(all_people)
 
     # Группируем людей по поколениям
     tree_levels = {}
@@ -28,39 +29,128 @@ def family_tree(request):
 
     # Сортируем поколения в обратном порядке (младшие вверху)
     sorted_tree_levels = sorted(tree_levels.items(), key=lambda x: x[0], reverse=True)
-    print(sorted_tree_levels)
 
-    context = {
-        'tree_levels': [level[1] for level in sorted_tree_levels]
-        # Убираем ключ поколения, оставляем только список людей
-    }
-
-    return render(request, 'tree/family_tree.html', context)
+    return render(request, 'tree/family_tree.html', {'tree_levels': sorted_tree_levels})
 
 
-def add_person(request, mother_id=None, father_id=None):
-    mother = get_object_or_404(Person, id=mother_id) if mother_id else None
-    father = get_object_or_404(Person, id=father_id) if father_id else None
+@login_required(login_url='users:login')
+def add_person(request):
+    if request.method == 'POST':
+        form = PersonForm(request.POST)
+        if form.is_valid():
+            new_person = form.save(commit=False)
+
+            # Проверяем, указано ли поколение
+            generation_number = request.POST.get('generation_number')
+            if generation_number:
+                generation, created = Generation.objects.get_or_create(
+                    generation_number=generation_number
+                )
+                new_person.generation = generation
+
+            # Сохраняем пользователя
+            new_person.creator_user = request.user
+            new_person.save()
+            return redirect('family_tree')
+    else:
+        form = PersonForm()
+
+    return render(request, 'tree/add_person.html', {'form': form})
+
+
+@login_required(login_url='users:login')
+def add_person_to_gen(request, generation_number):
+    # Находим или создаем поколение
+    generation = get_object_or_404(Generation, generation_number=generation_number)
+    previous_generation = Generation.objects.filter(generation_number=generation_number - 1).first()
+
     if request.method == 'POST':
         form = PersonForm(request.POST)
         if form.is_valid():
             person = form.save(commit=False)
-            if mother:
-                person.mother = mother
-            if father:
-                person.father = father
-
+            person.generation = generation
             person.creator_user = request.user
-            person.save()
 
+            # Установить родителей, если они были выбраны
+            mother_id = request.POST.get('mother')
+            father_id = request.POST.get('father')
+
+            if mother_id:
+                person.mother = Person.objects.get(id=mother_id)
+            if father_id:
+                person.father = Person.objects.get(id=father_id)
+
+            person.save()
             return redirect('family_tree')
     else:
         form = PersonForm()
-    return render(request, 'tree/add_person.html', {'form': form, 'mother': mother, 'father': father})
+
+        # Получаем список возможных родителей из предыдущего поколения
+    possible_mothers = Person.objects.filter(generation=previous_generation,
+                                             gender='female') if previous_generation else []
+    possible_fathers = Person.objects.filter(generation=previous_generation,
+                                             gender='male') if previous_generation else []
+
+    return render(request, 'tree/add_person.html', {
+        'form': form,
+        'generation': generation,
+        'possible_mothers': possible_mothers,
+        'possible_fathers': possible_fathers
+    })
 
 
+@login_required(login_url='users:login')
+def add_person_with_parent(request, person_id):
+    parent = get_object_or_404(Person, id=person_id)
+    gen_num = parent.generation.generation_number
+
+    next_gen, _ = Generation.objects.get_or_create(
+        generation_number=(gen_num + 1),
+        creator_user=request.user
+    )
+
+    if request.method == 'POST':
+        form = PersonForm(request.POST)
+        if form.is_valid():
+            person = form.save(commit=False)
+            person.generation = next_gen
+            person.creator_user = request.user
+
+            # Один родитель уже выбран, добавляем второго
+            if parent.gender == 'male':
+                person.father = parent
+                mother_id = request.POST.get('mother')
+                if mother_id:
+                    person.mother = Person.objects.get(id=mother_id)
+            else:
+                person.mother = parent
+                father_id = request.POST.get('father')
+                if father_id:
+                    person.father = Person.objects.get(id=father_id)
+
+            person.save()
+            return redirect('family_tree')
+    else:
+        form = PersonForm()
+
+    # Получаем список второго родителя
+    possible_mothers = Person.objects.filter(generation=parent.generation,
+                                             gender='female') if parent.gender == 'male' else []
+    possible_fathers = Person.objects.filter(generation=parent.generation,
+                                             gender='male') if parent.gender == 'female' else []
+
+    return render(request, 'tree/add_person_with_parents.html', {
+        'form': form,
+        'parent': parent,
+        'possible_mothers': possible_mothers,
+        'possible_fathers': possible_fathers
+    })
+
+
+@login_required(login_url='users:login')
 def edit_person(request, person_id):
     person = get_object_or_404(Person, id=person_id)
+
     if request.method == 'POST':
         form = PersonForm(request.POST, instance=person)
         if form.is_valid():
@@ -68,12 +158,18 @@ def edit_person(request, person_id):
             return redirect('family_tree')
     else:
         form = PersonForm(instance=person)
-    return render(request, 'tree/edit_person.html', {'form': form})
+    return render(request, 'tree/edit_person.html', {'form': form, 'person': person})
 
 
+@login_required(login_url='users:login')
 def delete_person(request, person_id):
     person = get_object_or_404(Person, id=person_id)
     if request.method == 'POST':
+        generation = Generation.objects.get(id=person.generation.id)
+        all_persons_in_generation = Person.objects.filter(generation=generation).exclude(id=person_id)
+
         person.delete()
-        return redirect('family_tree')
-    return render(request, 'tree/delete_person.html', {'person': person})
+        if not all_persons_in_generation:
+            generation.delete()
+
+    return redirect('family_tree')

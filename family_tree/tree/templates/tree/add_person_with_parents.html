@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Новый элемент{% endblock %}
+
+{% block content %}
+
+
+<h2 class="h3 mb-3 fw-bolder text-center">Добавить ребенка от {{parent.first_name}} {{parent.last_name}}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    {% if possible_mothers %}
+    <label for="mother">Мать:</label>
+    <select name="mother" id="mother" class="form-control">
+        <option value="">Не выбрано</option>
+        {% for person in possible_mothers %}
+        <option value="{{ person.id }}">{{ person.first_name }} {{ person.last_name }}</option>
+        {% endfor %}
+    </select>
+    {% endif %}
+
+    {% if possible_fathers %}
+    <label for="father">Отец:</label>
+    <select name="father" id="father" class="form-control">
+        <option value="">Не выбрано</option>
+        {% for person in possible_fathers %}
+        <option value="{{ person.id }}">{{ person.first_name }} {{ person.last_name }}</option>
+        {% endfor %}
+    </select>
+    {% endif %}
+
+    <br>
+    <!-- Кнопка для отправки формы -->
+    <button class="btn btn-success d-grid gap-2 col-6 mx-auto" type="submit">ОК</button>
+</form>
+
+
+{% endblock %}
