@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Семейное дерево{% endblock %}
+
+{% block content %}
+
+<h1>Генеалогическое древо</h1>
+<div id="family-tree">
+    {% for level in tree_levels %}
+    <div class="tree-level">
+        {% for person in level %}
+        <div class="person">
+            <p>{{ person.first_name }} {{ person.last_name }}</p>
+<!--            <a href="{% url 'add_person_with_parent' person.id %}">Добавить ребенка</a>-->
+<!--            <a href="{% url 'edit_person' person.id %}">Редактировать</a>-->
+<!--            <form action="{% url 'delete_person' person.id %}" method="post" style="display:inline;">-->
+<!--                {% csrf_token %}-->
+<!--                <button type="submit" onclick="return confirm('Вы уверены?');">Удалить</button>-->
+<!--            </form>-->
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+
+<!--<a href="{% url 'add_person' %}" class="btn btn-success">Добавить человека</a>-->
+
+
+<link type="text/css" rel="stylesheet" href="{% static 'tree/css/main.css' %}"/>
+{% endblock %}
