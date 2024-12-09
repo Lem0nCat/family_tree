@@ -9,24 +9,24 @@ class PersonForm(forms.ModelForm):
         ('female', 'Female'),
     ]
 
-    first_name = forms.CharField(widget=forms.TextInput(attrs={
+    first_name = forms.CharField(label='Имя', widget=forms.TextInput(attrs={
         'class': 'form-control',
         'placeholder': 'Введите имя'
     }))
-    last_name = forms.CharField(widget=forms.TextInput(attrs={
+    last_name = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={
         'class': 'form-control',
         'placeholder': 'Введите фамилию'
     }))
     gender = forms.ChoiceField(
         choices=GENDERS,
+        label='Пол',
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True
     )
-    birth_date = forms.DateField(
+    birth_date = forms.DateField(label='Дата рождения',
         widget=forms.DateInput(attrs={
             'class': 'form-control',
-            'type': 'date',  # Указывает браузеру отображать выбор даты
-            'placeholder': 'Выберите дату рождения'
+            'placeholder': '01.01.0001'
         }),
         required=False
     )
