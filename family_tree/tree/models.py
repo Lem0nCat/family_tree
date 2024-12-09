@@ -5,7 +5,7 @@ from django.db import models
 
 class Generation(models.Model):
     """Модель для поколений"""
-    generation_number = models.IntegerField(unique=True)
+    generation_number = models.IntegerField()
     description = models.CharField(max_length=255, blank=True, null=True)
     creator_user = models.ForeignKey(
         get_user_model(),
@@ -14,7 +14,7 @@ class Generation(models.Model):
     )
 
     def __str__(self):
-        return f"Gen #{self.generation_number}"
+        return f"Gen #{self.generation_number} - {self.creator_user}"
 
 
 class Person(models.Model):
@@ -67,10 +67,6 @@ class Person(models.Model):
         if self.mother and self.mother.gender != 'female':
             raise ValidationError("Мать должна быть женщиной.")
 
-        # Проверка: Если добавлен один родитель, должен быть добавлен и другой
-        if (self.mother and not self.father) or (not self.mother and self.father):
-            raise ValidationError("Не может быть только одного родителя.")
-
         # Проверка: Отец и мать не могут быть одним и тем же человеком
         if self.father and self.mother and self.father == self.mother:
             raise ValidationError("Отец и мать не могут быть одним и тем же человеком.")
@@ -81,6 +77,8 @@ class Person(models.Model):
             raise ValidationError("Отец и мать должны быть из одного поколения")
 
         # Проверка: Ребенок должен быть на одно поколение старше своих родителей
-        if (self.mother and self.mother.generation
-                and self.generation.generation_number != self.mother.generation.generation_number + 1):
-            raise ValidationError("Отец и мать должны быть на одно поколение старше ребенка.")
+        if self.mother and self.mother.generation and self.generation.generation_number != self.mother.generation.generation_number + 1:
+            raise ValidationError("Мать должна быть на одно поколение старше ребенка.")
+
+        if self.father and self.father.generation and self.generation.generation_number != self.father.generation.generation_number + 1:
+            raise ValidationError("Отец должен быть на одно поколение старше ребенка.")

@@ -15,7 +15,7 @@
             {% if form.non_field_errors %}
             <div class="alert alert-danger" role="alert">
                 {% for error in form.non_field_errors %}
-                    {{ error }}
+                {{ error }}
                 {% endfor %}
             </div>
             {% endif %}
@@ -28,7 +28,7 @@
                 {% if field.errors %}
                 <div class="invalid-feedback d-block">
                     {% for error in field.errors %}
-                        {{ error }}
+                    {{ error }}
                     {% endfor %}
                 </div>
                 {% endif %}
@@ -42,7 +42,7 @@
             {% endfor %}
 
             <!-- Кнопка для входа -->
-            <button class="btn btn-success d-grid gap-2 col-6 mx-auto" type="submit">Войти</button>
+            <button class="btn btn-success rounded-pill px-4 d-grid gap-2 col-6 mx-auto" type="submit">Войти</button>
         </form>
     </div>
 </div>

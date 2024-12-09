@@ -1,16 +1,15 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Редактировать элемент{% endblock %}
+{% block title %}Регистрация{% endblock %}
 
 {% block content %}
 
+<!-- Форма для регистрации пользователей -->
 <div class="d-flex align-items-center py-4">
     <div class="form-signin w-100 m-auto">
         <form method="post" novalidate>
             {% csrf_token %}
-            <h2 class="h3 mb-3 fw-bolder text-center">Редактировать информацию о человеке:
-                {{ person.first_name }} {{person.last_name }}</h2>
+            <h1 class="h3 mb-3 fw-bolder text-center">Регистрация</h1>
 
             <!-- Общие ошибки формы -->
             {% if form.non_field_errors %}
@@ -42,11 +41,12 @@
             </div>
             {% endfor %}
 
-            <!-- Кнопка для отправки формы -->
-            <button class="btn btn-success d-grid gap-2 col-6 mx-auto" type="submit">ОК</button>
+            <!-- Кнопка для входа -->
+            <button class="btn btn-success rounded-pill px-4 d-grid gap-2 col-6 mx-auto" type="submit">
+                Зарегистрироваться
+            </button>
         </form>
     </div>
 </div>
-
 
 {% endblock %}

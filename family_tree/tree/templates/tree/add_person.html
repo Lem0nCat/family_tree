@@ -10,7 +10,7 @@
     <div class="form-signin w-100 m-auto">
         <form method="post" novalidate>
             {% csrf_token %}
-            <h2 class="h3 mb-3 fw-bolder text-center">Добавить человека в поколение №{{generation.generation_number}}</h2>
+            <h2 class="h3 mb-3 fw-bolder text-center">Добавить человека в поколение №{{generation_number}}</h2>
 
             <!-- Общие ошибки формы -->
             {% if form.non_field_errors %}
@@ -48,7 +48,7 @@
                 {% for person in possible_mothers %}
                 <option value="{{ person.id }}">{{ person.first_name }} {{ person.last_name }}</option>
                 {% endfor %}
-            </select>
+            </select><br>
 
             <label for="father">Отец (из предыдущего поколения):</label>
             <select name="father" id="father" class="form-control">
