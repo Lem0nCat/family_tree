@@ -1,2 +1,2 @@
-# sovcombank_test_task
-Тестовое задание для Совкомбанка
+# Family tree
+A small project with WEB application to create a genealogical tree
