@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Семейное дерево{% endblock %}
+
+{% block content %}
+
+<h1 class="text-center my-4">Генеалогическое древо</h1>
+
+<div id="family-tree" class="container">
+    {% for generation_number, persons in tree_levels %}
+    <div class="tree-level mb-4">
+        <div class="text-center mb-2">
+            <h4>Поколение №{{ generation_number }}</h4>
+            <a href="{% url 'add_person_to_gen' generation_number %}"
+               class="btn btn-outline-success rounded-circle"
+               title="Добавить человека">
+                <i class="bi bi-plus"></i>
+            </a>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-center">
+            {% for person in persons %}
+            <div class="card mx-2 mb-3 shadow-sm" style="width: 10rem;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ person.first_name }} {{ person.last_name }}</h5>
+
+                    {% if person.mother or person.father %}
+                    <div class="text-muted">
+                        {% if person.mother %}
+                        Мать: {{ person.mother }}
+                        {% endif %}
+                        {% if person.father %}
+                        <br>Отец: {{ person.father }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-center mt-3">
+                        <a href="{% url 'add_person_with_parent' person.id %}"
+                           class="btn btn-sm btn-outline-success rounded-circle mx-1"
+                           title="Добавить потомка">
+                            <i class="bi bi-person-plus"></i>
+                        </a>
+                        <a href="{% url 'edit_person' person.id %}"
+                           class="btn btn-sm btn-outline-primary rounded-circle mx-1"
+                           title="Редактировать">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="{% url 'delete_person' person.id %}" method="post" class="d-inline-block">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-danger rounded-circle"
+                                    type="submit"
+                                    title="Удалить"
+                                    onclick="return confirm('Вы хотите удалить элемент?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<link type="text/css" rel="stylesheet" href="{% static 'tree/css/main.css' %}"/>
+{% endblock %}

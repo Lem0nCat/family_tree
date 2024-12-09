@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Новый элемент{% endblock %}
+
+{% block content %}
+
+
+<div class="d-flex align-items-center py-4">
+    <div class="form-signin w-100 m-auto">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <h2 class="h3 mb-3 fw-bolder text-center">Добавить человека в поколение №{{generation_number}}</h2>
+
+            <!-- Общие ошибки формы -->
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {% for error in form.non_field_errors %}
+                {{ error }}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Обработка полей формы -->
+            {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in field.errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <!-- Добавляем классы для полей с ошибками -->
+                {% if field.errors %}
+                <script>
+                    document.getElementById("{{ field.id_for_label }}").classList.add("is-invalid");
+                </script>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <label for="mother">Мать (из предыдущего поколения):</label>
+            <select name="mother" id="mother" class="form-control">
+                <option value="">Не выбрано</option>
+                {% for person in possible_mothers %}
+                <option value="{{ person.id }}">{{ person.first_name }} {{ person.last_name }}</option>
+                {% endfor %}
+            </select><br>
+
+            <label for="father">Отец (из предыдущего поколения):</label>
+            <select name="father" id="father" class="form-control">
+                <option value="">Не выбрано</option>
+                {% for person in possible_fathers %}
+                <option value="{{ person.id }}">{{ person.first_name }} {{ person.last_name }}</option>
+                {% endfor %}
+            </select><br>
+
+
+            <!-- Кнопка для отправки формы -->
+            <button class="btn btn-success d-grid gap-2 col-6 mx-auto" type="submit">ОК</button>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}
